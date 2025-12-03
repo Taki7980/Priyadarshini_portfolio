@@ -1,0 +1,166 @@
+---
+import Layout from '../layouts/Layout.astro';
+import artworks from '../../artworkData.js';
+
+interface Artwork {
+  id: string;
+  title: string;
+  medium: string;
+  dimensions: string;
+  orientation: 'left' | 'right' | 'center';
+  backgroundImage: string;
+  imageUrl: string;
+  alt: string;
+  description: string;
+}
+---
+
+<Layout title="Gallery of Classical Echoes">
+  <main>
+    <section
+      class="hero"
+      aria-label="Artist introduction"
+      style={"--hero-bg: url('https://source.unsplash.com/1600x900/?renaissance,painting')"}
+    >
+      <div class="hero-inner">
+        <h1 class="hero-title">ART Portfolio</h1>
+        <p class="hero-tagline">Works by Priyadarshini Singh</p>
+
+        <div class="hero-statement">
+          <span>
+            I create art that explores the intersection of color, form, and emotion. My practice spans water colour,Acrylic,graphite,coloured pencils, where I seek to capture fleeting moments and translate them into visual narratives. Each piece is an invitation to pause, observe, and find meaning in the unexpected. 
+          </span>
+          <span>
+            Each piece is treated as a room of its own: a measured space for slowness, looking, and
+            the subtle afterimages that linger once we leave the museum.
+          </span>
+        </div>
+
+        <div class="hero-cta-row">
+          <a href="#gallery-start" class="hero-cta">Enter the gallery</a>
+          <p class="hero-caption">
+            Scroll slowly. Allow each work the time and distance it would receive on the wall of a
+            quiet exhibition room.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="gallery-shell" id="gallery-start">
+      <div class="gallery-intro-strip" aria-hidden="true">
+        <div class="gallery-intro-heading">Selected Works</div>
+        <div class="gallery-intro-meta">
+          {artworks.length} pieces. A continuous promenade through various mediums and expressions.
+          Alternating vistas invite you to move between image and text as you progress through the exhibition.
+        </div>
+      </div>
+
+      {artworks.map((art, index) => (
+        <section
+          id={art.id}
+          class={`art-section layout-${art.orientation}`}
+          style={`--bg-image: url('${art.backgroundImage}')`}
+        >
+          <div class="art-section-inner">
+            <div class="art-panel-shell">
+              <div class="art-panel-content">
+                <div class="art-image-frame">
+                  <div class="art-image-mat">
+                    <div class="art-image-inner">
+                      <img
+                        src={art.imageUrl}
+                        alt={art.alt}
+                        loading={index === 0 ? 'eager' : 'lazy'}
+                        decoding="async"
+                        class="artwork-image"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <article class="art-text-column" aria-label={art.title}>
+              <header class="art-heading-lockup">
+                <p class="art-room-label">Room {index + 1}</p>
+                <h2 class="art-title">{art.title}</h2>
+                <div class="art-meta-row">
+                  <div>
+                    <div class="art-meta-label">Medium</div>
+                    <div class="art-meta-value">{art.medium}</div>
+                  </div>
+                  <div>
+                    <div class="art-meta-label">Dimensions</div>
+                    <div class="art-meta-value">{art.dimensions}</div>
+                  </div>
+                </div>
+              </header>
+
+              <section class="art-description">
+                <p>
+                  {art.description}
+                </p>
+              </section>
+
+              <p class="art-notes">
+                Exhibition notes: description and provenance details can be placed here, alongside
+                series information or installation context.
+              </p>
+            </article>
+          </div>
+
+          <div class="section-divider" aria-hidden="true"></div>
+        </section>
+      ))}
+    </section>
+
+    <footer class="site-footer">
+      <small>© {new Date().getFullYear()} Priyadarshini Singh. All rights reserved.</small>
+      <span>
+        Background imagery sourced from public collections & royalty-free archives (e.g. Unsplash,
+        Wikimedia Commons, museum open-access programs).
+      </span>
+    </footer>
+  </main>
+</Layout>
+
+<script>
+  if (typeof window !== 'undefined') {
+    const prefersReducedMotion = window.matchMedia(
+      '(prefers-reduced-motion: reduce)'
+    ).matches;
+
+    const sections = document.querySelectorAll<HTMLElement>('.art-section');
+
+    if (sections.length && !prefersReducedMotion) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) {
+              (entry.target as HTMLElement).classList.add('in-view');
+              observer.unobserve(entry.target);
+            }
+          }
+        },
+        { threshold: 0.25 }
+      );
+
+      sections.forEach((section) => observer.observe(section));
+
+      const handleParallax = () => {
+        const scrollY = window.scrollY || window.pageYOffset;
+
+        sections.forEach((section, index) => {
+          const speed = 0.25 + (index % 3) * 0.05;
+          const offset = scrollY * speed * -0.04;
+          section.style.setProperty('--parallax-offset', `${offset}px`);
+        });
+      };
+
+      window.addEventListener('scroll', handleParallax, { passive: true });
+      handleParallax();
+    } else {
+      sections.forEach((section) => section.classList.add('in-view'));
+    }
+  }
+</script>
